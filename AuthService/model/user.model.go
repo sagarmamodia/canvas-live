@@ -13,5 +13,5 @@ type User struct {
 	Name     string             `bson:"name" json:"name"`
 	Email    string             `bson:"email" json:"email"`
 	Password string             `bson:"password" json:"password"`
-	JoinedAt time.Time          `bson:"joined_at" json:"joined_at"`
+	JoinedAt time.Time          `bson:"joinedAt" json:"joinedAt"`
 }

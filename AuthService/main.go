@@ -2,6 +2,7 @@ package main
 
 import (
 	"auth-service/handler"
+	"auth-service/middleware"
 	"auth-service/repository"
 	"context"
 	"fmt"
@@ -46,6 +47,7 @@ func main() {
 	// Handlers
 	healthHandler := handler.HealthHandler{}
 	authHandler := handler.AuthHandler{UserRepository: userRepository}
+	userHandler := handler.UserHandler{UserRepository: userRepository}
 
 	// Server
 	mux := http.NewServeMux()
@@ -53,10 +55,12 @@ func main() {
 	mux.Handle("/register", http.HandlerFunc(authHandler.RegisterUser))
 	mux.Handle("/login", http.HandlerFunc(authHandler.LoginUser))
 	mux.Handle("/authenticate", http.HandlerFunc(authHandler.AuthenticateRequest))
+	mux.Handle("/users", http.HandlerFunc(userHandler.RetrieveSearchedUsers))
 
+	finalMux := middleware.RequestLoggingMiddleware(mux)
 	fmt.Println("Starting server on port 8080...")
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":8080", finalMux); err != nil {
 		log.Fatalf("Could not start server: %s\n", err.Error())
 	}
 }
