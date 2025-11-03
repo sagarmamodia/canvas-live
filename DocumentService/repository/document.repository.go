@@ -33,7 +33,7 @@ func (r *DocumentRepository) CreateNewDocument(ctx context.Context, title string
 		Slides: []model.Slide{
 			{
 				Background: "#FFFFFF",
-				Objects:    []model.DocObject{},
+				// Objects:    []interface{},
 			},
 		},
 	}
@@ -109,7 +109,7 @@ func (r *DocumentRepository) FindSharedDocuments(ctx context.Context, userId str
 	}
 	defer cursor.Close(ctx)
 
-	var sharedDocRecords []model.SharedDocRecord
+	var sharedDocRecords []model.CollaborationRecord
 	if err = cursor.All(ctx, &sharedDocRecords); err != nil {
 		fmt.Printf("[DocumentRepository][FindSharedDocuments] Error decoding shared document records: %v\n", err)
 		return []model.Document{}, err
@@ -150,10 +150,35 @@ func (r *DocumentRepository) FindSharedDocuments(ctx context.Context, userId str
 	return documents, nil
 }
 
-func (r *DocumentRepository) CreateSharedDocRecord(ctx context.Context, collaboratorUserId string, documentId, accessType string) (model.SharedDocRecord, error) {
+func (r *DocumentRepository) IsDocumentOwnedByUser(ctx context.Context, userId string, documentId string) (bool, error) {
+
+	documentObjectId, err := primitive.ObjectIDFromHex(documentId)
+	if err != nil {
+		fmt.Printf("[DocumentRepository][IsDocumentOwnedByUser] Invalid document id: %v\n", err)
+		return false, err
+	}
+
+	// retrieve documents
+	filter := bson.M{"_id": documentObjectId}
+
+	var document model.Document
+	err = r.collection.FindOne(ctx, filter).Decode(&document)
+	if err != nil {
+		fmt.Printf("[DocumentRepository][IsDocumentOwnedByUser] Error retrieving or decoding document: %v\n", err)
+		return false, err
+	}
+
+	if document.OwnerID == userId {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (r *DocumentRepository) CreateCollaborationRecord(ctx context.Context, collaboratorUserId string, documentId, accessType string) (model.CollaborationRecord, error) {
 
 	// Create shared document record object
-	sharedDocRecord := model.SharedDocRecord{
+	sharedDocRecord := model.CollaborationRecord{
 		UserID:     collaboratorUserId,
 		DocumentID: documentId,
 		AccessType: accessType,
@@ -163,7 +188,7 @@ func (r *DocumentRepository) CreateSharedDocRecord(ctx context.Context, collabor
 	result, err := r.sharedDocRecordCollection.InsertOne(ctx, sharedDocRecord)
 	if err != nil {
 		fmt.Printf("[DocumentRepository] Error creating sharing record: %v\n", err)
-		return model.SharedDocRecord{}, err
+		return model.CollaborationRecord{}, err
 	}
 
 	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {

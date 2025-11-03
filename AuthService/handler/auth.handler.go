@@ -67,6 +67,7 @@ func (h AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&loginData)
 	if err != nil {
 		http.Error(w, "Invalid json data format", http.StatusBadRequest)
+		return
 	}
 
 	// 2. Set up context

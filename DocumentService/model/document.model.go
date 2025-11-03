@@ -2,14 +2,10 @@ package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-// DocumentData Model
-type DocObject interface {
-}
-
 type Slide struct {
-	ID         primitive.ObjectID `bson:"_id,omitemtpy" json:"id,omitempty"`
-	Background string             `bson:"background" json:"background"`
-	Objects    []DocObject        `bson:"objects" json:"objects"`
+	ID         string        `bson:"_id,omitemtpy" json:"id,omitempty"`
+	Background string        `bson:"background" json:"background"`
+	Objects    []interface{} `bson:"objects" json:"objects"`
 }
 
 type Document struct {

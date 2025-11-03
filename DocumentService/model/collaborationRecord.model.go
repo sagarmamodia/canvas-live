@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type SharedDocRecord struct {
+type CollaborationRecord struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	UserID     string             `bson:"userId" json:"userId"`
 	DocumentID string             `bson:"documentId" json:"documentId"`

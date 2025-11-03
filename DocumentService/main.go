@@ -51,7 +51,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
 	mux.Handle("/document/all", http.HandlerFunc(documentHandler.GetAllDocuments))
-	// mux.Handle("/document/share", http.HandlerFunc(documentHandler.CreateNewDocument))
+	mux.Handle("/document/share", http.HandlerFunc(documentHandler.ShareDocument))
 	// mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
 	// mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
 
