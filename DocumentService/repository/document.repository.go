@@ -17,7 +17,7 @@ type DocumentRepository struct {
 
 func NewDocumentRepository(client *mongo.Client, database string, collection string, sharedDocCollectionName string) *DocumentRepository {
 	coll := client.Database(database).Collection(collection)
-	shared := client.Database(sharedDocCollectionName).Collection(sharedDocCollectionName)
+	shared := client.Database(database).Collection(sharedDocCollectionName)
 	return &DocumentRepository{
 		collection:                coll,
 		sharedDocRecordCollection: shared,
@@ -32,8 +32,9 @@ func (r *DocumentRepository) CreateNewDocument(ctx context.Context, title string
 		OwnerID: ownerId,
 		Slides: []model.Slide{
 			{
+				ID:         primitive.NewObjectID().Hex(),
 				Background: "#FFFFFF",
-				// Objects:    []interface{},
+				Objects:    make([]model.Object, 0, 1),
 			},
 		},
 	}
@@ -57,6 +58,7 @@ func (r *DocumentRepository) DeleteDocument(ctx context.Context, id string) erro
 		fmt.Printf("[DocumentRepository] Invalid document id: %v\n", err)
 		return err
 	}
+	fmt.Printf("[DocumentRepository][FindOwnedDocuments] Error decoding documents: %v\n", err)
 
 	filter := bson.M{"_id": objectId}
 

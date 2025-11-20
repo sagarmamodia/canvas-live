@@ -16,5 +16,5 @@ var MongoConfig = MongoConfigStruct{
 	DatabaseName:                  "default",
 	UserCollectionName:            "user",
 	DocumentCollectionName:        "document",
-	SharedDocRecordCollectionName: "shared",
+	SharedDocRecordCollectionName: "sharedDocRecordCollection",
 }

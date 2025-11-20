@@ -52,13 +52,13 @@ func main() {
 	mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
 	mux.Handle("/document/all", http.HandlerFunc(documentHandler.GetAllDocuments))
 	mux.Handle("/document/share", http.HandlerFunc(documentHandler.ShareDocument))
-	// mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
+	mux.Handle("/document/delete", http.HandlerFunc(documentHandler.DeleteDocument))
 	// mux.Handle("/document/create", http.HandlerFunc(documentHandler.CreateNewDocument))
 
 	finalMux := middleware.RequestLoggingMiddleware(mux)
-	fmt.Println("Starting server on port 8081")
+	fmt.Println("Starting server on port 8082")
 
-	if err := http.ListenAndServe(":8081", finalMux); err != nil {
+	if err := http.ListenAndServe(":8082", finalMux); err != nil {
 		log.Fatalf("Could not start server: %s\n", err.Error())
 	}
 

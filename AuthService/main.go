@@ -58,9 +58,9 @@ func main() {
 	mux.Handle("/users", http.HandlerFunc(userHandler.RetrieveSearchedUsers))
 
 	finalMux := middleware.RequestLoggingMiddleware(mux)
-	fmt.Println("Starting server on port 8080...")
+	fmt.Println("Starting server on port 8081...")
 
-	if err := http.ListenAndServe(":8080", finalMux); err != nil {
+	if err := http.ListenAndServe(":8081", finalMux); err != nil {
 		log.Fatalf("Could not start server: %s\n", err.Error())
 	}
 }
