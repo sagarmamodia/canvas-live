@@ -9,7 +9,8 @@ type Object struct {
 }
 
 type Slide struct {
-	ID         string   `bson:"_id,omitemtpy" json:"id,omitempty"`
+	// ID         string   `bson:"_id,omitemtpy" json:"id,omitempty"`
+	ID         string   `bson:"_id" json:"id"`
 	Background string   `bson:"background" json:"background"`
 	Objects    []Object `bson:"objects" json:"objects"`
 }

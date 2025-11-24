@@ -69,11 +69,13 @@ func (r *DocumentRepository) CreateNewDocument(ctx context.Context, title string
 	emptyDocument := model.Document{
 		Title:   title,
 		OwnerID: ownerId,
+		// Slides:  make([]model.Slide, 0),
 		Slides: []model.Slide{
 			{
 				ID:         primitive.NewObjectID().Hex(),
 				Background: "#FFFFFF",
-				Objects:    make([]model.Object, 0, 1),
+				// Objects:    make([]model.Object, 0, 1),
+				Objects:    make([]model.Object, 0),
 			},
 		},
 	}
@@ -181,8 +183,10 @@ func (r *DocumentRepository) FindSharedDocuments(ctx context.Context, userId str
 		return []model.Document{}, err
 	}
 	defer cursor.Close(ctx)
+	
 
-	var documents []model.Document
+	documents:= []model.Document{}
+
 	if err = cursor.All(ctx, &documents); err != nil {
 		fmt.Printf("[DocumentRepository][FindSharedDocuments] Error decoding documents: %v\n", err)
 		return []model.Document{}, nil
@@ -190,7 +194,6 @@ func (r *DocumentRepository) FindSharedDocuments(ctx context.Context, userId str
 
 	return documents, nil
 }
-
 func (r *DocumentRepository) IsDocumentOwnedByUser(ctx context.Context, userId string, documentId string) (bool, error) {
 
 	documentObjectId, err := primitive.ObjectIDFromHex(documentId)

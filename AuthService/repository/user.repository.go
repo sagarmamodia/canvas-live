@@ -90,3 +90,28 @@ func (r *UserRepository) FindUserByEmail(ctx context.Context, email string) (*mo
 
 	return &user, nil
 }
+func (r *UserRepository) FindByQuery(ctx context.Context, query string) ([]model.User, error) {
+	// Note: In your model.User, Username has `bson:"name"`.
+	// So we must search the "name" field in MongoDB, not "username".
+	filter := bson.M{
+		"$or": []bson.M{
+			{"name": bson.M{"$regex": query, "$options": "i"}},
+			{"email": bson.M{"$regex": query, "$options": "i"}},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		log.Printf("Error searching users: %v", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Initialize as empty slice to ensure [] is returned instead of null
+	users := []model.User{}
+	if err = cursor.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

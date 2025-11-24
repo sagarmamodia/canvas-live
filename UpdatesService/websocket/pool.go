@@ -43,21 +43,19 @@ func (pool *Pool) Start() types.Message {
 		case client := <-pool.Register:
 			fmt.Println("Trying to register a client")
 
-			// initialize the inner map
 			if _, ok := pool.Rooms[client.DocumentID]; !ok {
 				pool.Rooms[client.DocumentID] = make(map[*Client]bool)
 			}
 
 			pool.Rooms[client.DocumentID][client] = true
 
-			// send joining message to each particpant of the room
 			for c := range pool.Rooms[client.DocumentID] {
 				message, err := json.Marshal(types.Message{
 					DocumentID: c.DocumentID,
 					UserID:     c.UserID,
 					Username:   c.Username,
 					Type:       1,
-					Body:       "New user joined",
+					Body:       `{"action": "notification", "value": "New user joined"}`,
 				})
 
 				if err != nil {
@@ -72,14 +70,13 @@ func (pool *Pool) Start() types.Message {
 
 		case client := <-pool.Unregister:
 			delete(pool.Rooms[client.DocumentID], client)
-			// send disconnection message to each participant of the room
 			for c := range pool.Rooms[client.DocumentID] {
 				message, err := json.Marshal(types.Message{
 					DocumentID: c.DocumentID,
 					UserID:     c.UserID,
 					Username:   c.Username,
 					Type:       1,
-					Body:       "User disconnected",
+					Body:       `{"action": "notification", "value": "User disconnected"}`,
 				})
 
 				if err != nil {
@@ -105,10 +102,6 @@ func (pool *Pool) Start() types.Message {
 				}
 
 				client.Send <- jsonData
-				// if err := client.Conn.WriteJSON(message); err != nil {
-				// 	fmt.Println("[Pool][RoomBroadcast]", err)
-				// 	continue
-				// }
 			}
 
 			fmt.Println("Broadcasted!")
