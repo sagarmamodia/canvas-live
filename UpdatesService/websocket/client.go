@@ -78,14 +78,14 @@ func (c *Client) Writer() {
 
 			if err := c.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
 				fmt.Println("[Client Writer] Failed to send message")
-				return // Exit the loop on failure
+				return 
 			}
 
-		case <-ticker.C: // Ping trigger
+		case <-ticker.C: 
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				fmt.Println("[Client Writer] PING fails")
-				return // Exit the loop if PING fails (connection is likely dead)
+				return 
 			}
 		}
 	}
@@ -97,22 +97,17 @@ func (c *Client) HandleMessage(p []byte) error {
 	var msg map[string]interface{}
 	if err := json.Unmarshal(p, &msg); err != nil {
 		fmt.Printf("[Client Reader] Error Unmarshaling Action Message - %s\n", err)
-		// Send Error message to client
-		// c.Send <- []byte("[Error] Invalid message format - Only JSON is allowed.")
 		return err
 	}
 
-	// Read action message
 	actVal, ok := msg["action"]
 	if !ok {
 		fmt.Println("[Client Reader] action key not available in message")
-		// c.Send <- []byte("[Error] Invalid message format - action key missing")
 		return fmt.Errorf("[Error] action key missing")
 	}
 	actionStr, ok := actVal.(string)
 	if !ok {
 		fmt.Println("[Client Reader] action key is not a string")
-		// c.Send <- []byte("[Error] Invalid message format - action key must be a string")
 		return fmt.Errorf("[Error] action key is not a string")
 	}
 
@@ -124,8 +119,6 @@ func (c *Client) HandleMessage(p []byte) error {
 		Body:       string(p),
 	}
 
-	// Data Validation
-	// If action is cursorMove
 	switch actionStr {
 	case "cursormove":
 		if types.ValidateCursorMoveMessage(msg) {
@@ -149,20 +142,31 @@ func (c *Client) HandleMessage(p []byte) error {
 				return fmt.Errorf("[Client][HandleMessage][Error] objectId missing")
 			}
 
-			if objectType == "rectangle" && types.ValidateRectangleAttributes(attr) {
-				if err := c.CheckLockAndBroadcastAndPushToKafka(outMsg, objectId); err != nil {
-					return err
-				}
+			isValid := false
+
+			switch objectType {
+			case "rectangle":
+				isValid = types.ValidateRectangleAttributes(attr)
+			case "circle":
+				isValid = types.ValidateCircleAttributes(attr)
+			case "text":
+				isValid = types.ValidateTextAttributes(attr)
+			case "pen":
+				isValid = types.ValidatePenAttributes(attr)
+			case "line", "arrow":
+				isValid = types.ValidateLineAttributes(attr)
+			case "image":
+				isValid = true 
+			default:
+				fmt.Printf("[HandleMessage] Unknown object type: %s\n", objectType)
 			}
-			if objectType == "circle" && types.ValidateCircleAttributes(attr) {
+
+			if isValid {
 				if err := c.CheckLockAndBroadcastAndPushToKafka(outMsg, objectId); err != nil {
 					return err
 				}
-			}
-			if objectType == "text" && types.ValidateTextAttributes(attr) {
-				if err := c.CheckLockAndBroadcastAndPushToKafka(outMsg, objectId); err != nil {
-					return err
-				}
+			} else {
+				fmt.Printf("[HandleMessage] Validation failed for type: %s\n", objectType)
 			}
 
 		}

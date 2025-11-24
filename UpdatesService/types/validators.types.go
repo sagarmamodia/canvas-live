@@ -106,6 +106,48 @@ func ValidateRectangleAttributes(attr map[string]interface{}) bool {
 
 	return true
 }
+func ValidatePenAttributes(attr map[string]interface{}) bool {
+	// Pen requires points, color, strokeWidth
+	if _, ok := attr["points"]; !ok {
+		return false
+	}
+	// Points must be a list/slice
+	if _, ok := attr["points"].([]interface{}); !ok {
+		return false
+	}
+	if _, ok := attr["color"]; !ok {
+		if _, ok2 := attr["strokeColor"]; !ok2 {
+			return false
+		}
+	}
+	if _, ok := attr["strokeWidth"]; !ok {
+		return false
+	}
+	return true
+}
+
+func ValidateLineAttributes(attr map[string]interface{}) bool {
+	// Line/Arrow behaves like a bounding box in your frontend logic (x,y,width,height)
+	if _, ok := attr["x"]; !ok {
+		return false
+	}
+	if _, ok := attr["y"]; !ok {
+		return false
+	}
+	if _, ok := attr["width"]; !ok {
+		return false
+	}
+	if _, ok := attr["height"]; !ok {
+		return false
+	}
+	if _, ok := attr["strokeWidth"]; !ok {
+		return false
+	}
+	if _, ok := attr["strokeColor"]; !ok {
+		return false
+	}
+	return true
+}
 
 func ValidateCreateMessage(msg map[string]interface{}) bool {
 	if _, ok := msg["objectType"]; !ok {
